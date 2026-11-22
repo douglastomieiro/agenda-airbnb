@@ -2,14 +2,13 @@
 
 Painel dos anúncios Airbnb (Studios M1, M2, M3 — São Pedro/SP).
 
-- `index.html` — página inicial, com links pras outras 3.
-- `agenda.html` — calendário de reservas/bloqueios (export oficial iCal do
-  Airbnb — sem preço, sem nome de hóspede).
-- `precos.html` — médias praticadas, preços de concorrentes cadastrados
-  (registrados manualmente) e sugestão de preço pros próximos 45 dias.
-- `tudo.html` — versão compacta com agenda + preços juntos, ~45 dias.
+- `index.html` — página única com tudo junto: agenda (calendário de 6 meses,
+  export oficial iCal do Airbnb — sem preço, sem nome de hóspede), preços,
+  concorrentes, média regional e sugestão de preço.
+- `agenda.html` — só o calendário, separado.
+- `precos.html` — só a parte de preços, separada.
 
-Atualizado automaticamente todo dia às 7h por um script agendado no PC
+Atualizado automaticamente 2x por dia (7h e 22h) por um script agendado no PC
 local (`airbnb-saopedro/publicar.py`, via Tarefa Agendada do Windows
 "AgendaAirbnb"). Os preços próprios vêm de uma captura pontual (não se
 atualizam sozinhos); concorrentes são o que for registrado manualmente com
