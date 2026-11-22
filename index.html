@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Agenda - Meus Anúncios Airbnb</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #f7f7f8; --card: #ffffff; --text: #1a1a1a; --muted: #6b6b6b;
+    --border: #e4e4e7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .subtitulo { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .legenda { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .legenda-item { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+  .bolinha {
+    width: 18px; height: 18px; border-radius: 50%; display: inline-flex;
+    align-items: center; justify-content: center; color: #fff; font-size: 8px;
+    font-weight: 700; flex: none; line-height: 1;
+  }
+  .meses { display: flex; flex-direction: column; gap: 28px; }
+  .mes-titulo { font-size: 16px; font-weight: 600; margin-bottom: 8px; text-transform: capitalize; }
+  .grade {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+  }
+  .dia-semana { font-size: 11px; color: var(--muted); text-align: center; padding-bottom: 2px; }
+  .dia {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    min-height: 64px; padding: 4px; font-size: 12px; position: relative;
+  }
+  .dia.vazio { background: transparent; border: none; }
+  .dia .numero { font-weight: 600; font-size: 11px; color: var(--muted); }
+  .dia.hoje { outline: 2px solid #111; }
+  .bolinhas { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 4px; }
+  .lista { margin-top: 36px; }
+  .lista h2 { font-size: 16px; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 8px 10px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  .rodape { margin-top: 28px; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+  <h1>Agenda dos meus anúncios — Airbnb</h1>
+  <div class="subtitulo">São Pedro / Águas de São Pedro — gerado em 22/11/2026 às 08:34</div>
+  <div class="legenda"><span class="legenda-item"><span class="bolinha" style="background:#e74c3c">M1</span>Studios M 1</span><span class="legenda-item"><span class="bolinha" style="background:#2980b9">M2</span>Studios M 2</span><span class="legenda-item"><span class="bolinha" style="background:#27ae60">M3</span>Studios M 3</span></div>
+  <div class="meses" id="meses"></div>
+  <div class="lista">
+    <h2>Próximas reservas</h2>
+    <table id="tabela-reservas">
+      <thead><tr><th>Anúncio</th><th>Tipo</th><th>Check-in</th><th>Check-out</th><th>Noites</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="rodape">
+    Dados vêm do export oficial de calendário do Airbnb (sem preço, sem nome de hóspede).
+    Para atualizar, rode <code>agenda.bat</code> de novo.
+  </div>
+
+<script>
+const ANUNCIOS = [{"nome": "Studios M 1", "cor": "#e74c3c", "eventos": [{"inicio": "2026-11-19", "fim": "2026-11-21", "tipo": "Reservado"}, {"inicio": "2026-11-21", "fim": "2026-11-23", "tipo": "Reservado"}, {"inicio": "2026-11-27", "fim": "2026-11-30", "tipo": "Reservado"}, {"inicio": "2026-12-04", "fim": "2026-12-06", "tipo": "Reservado"}, {"inicio": "2026-12-28", "fim": "2027-01-02", "tipo": "Reservado"}]}, {"nome": "Studios M 2", "cor": "#2980b9", "eventos": [{"inicio": "2026-12-28", "fim": "2027-01-02", "tipo": "Reservado"}, {"inicio": "2026-11-21", "fim": "2026-11-23", "tipo": "Bloqueado"}]}, {"nome": "Studios M 3", "cor": "#27ae60", "eventos": [{"inicio": "2026-11-21", "fim": "2026-11-23", "tipo": "Reservado"}, {"inicio": "2026-12-29", "fim": "2027-01-05", "tipo": "Reservado"}, {"inicio": "2027-11-22", "fim": "2027-11-23", "tipo": "Bloqueado"}]}];
+const DIAS_SEMANA = ['D','S','T','Q','Q','S','S'];
+const MESES_NOME = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+function parseISO(s) {
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+
+function mesmodia(a,b) {
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+
+function siglaDoAnuncio(nome) {
+  const m = nome.match(/([A-Za-z]+)\s*0*([0-9]+)\s*$/);
+  if (m) return (m[1][0] + m[2]).toUpperCase();
+  return nome.split(' ').filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase();
+}
+
+function construirMeses() {
+  const container = document.getElementById('meses');
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  for (let offset = 0; offset < 6; offset++) {
+    const refDate = new Date(hoje.getFullYear(), hoje.getMonth() + offset, 1);
+    const ano = refDate.getFullYear();
+    const mes = refDate.getMonth();
+    const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
+    const diasNoMes = new Date(ano, mes + 1, 0).getDate();
+
+    const bloco = document.createElement('div');
+    const titulo = document.createElement('div');
+    titulo.className = 'mes-titulo';
+    titulo.textContent = MESES_NOME[mes] + ' de ' + ano;
+    bloco.appendChild(titulo);
+
+    const grade = document.createElement('div');
+    grade.className = 'grade';
+    DIAS_SEMANA.forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'dia-semana';
+      el.textContent = d;
+      grade.appendChild(el);
+    });
+    for (let i = 0; i < primeiroDiaSemana; i++) {
+      const vazio = document.createElement('div');
+      vazio.className = 'dia vazio';
+      grade.appendChild(vazio);
+    }
+    for (let dia = 1; dia <= diasNoMes; dia++) {
+      const dataAtual = new Date(ano, mes, dia);
+      const celula = document.createElement('div');
+      celula.className = 'dia' + (mesmodia(dataAtual, hoje) ? ' hoje' : '');
+      const numero = document.createElement('div');
+      numero.className = 'numero';
+      numero.textContent = dia;
+      celula.appendChild(numero);
+
+      const bolinhas = document.createElement('div');
+      bolinhas.className = 'bolinhas';
+      ANUNCIOS.forEach(anuncio => {
+        anuncio.eventos.forEach(ev => {
+          const ini = parseISO(ev.inicio);
+          const fim = parseISO(ev.fim);
+          if (dataAtual >= ini && dataAtual < fim) {
+            const bolinha = document.createElement('span');
+            bolinha.className = 'bolinha';
+            bolinha.style.background = anuncio.cor;
+            if (ev.tipo === 'Bloqueado') { bolinha.style.opacity = '0.45'; }
+            bolinha.title = anuncio.nome + ' — ' + ev.tipo;
+            bolinha.textContent = siglaDoAnuncio(anuncio.nome);
+            bolinhas.appendChild(bolinha);
+          }
+        });
+      });
+      celula.appendChild(bolinhas);
+      grade.appendChild(celula);
+    }
+    bloco.appendChild(grade);
+    container.appendChild(bloco);
+  }
+}
+
+function construirTabela() {
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  const linhas = [];
+  ANUNCIOS.forEach(anuncio => {
+    anuncio.eventos.forEach(ev => {
+      const ini = parseISO(ev.inicio);
+      const fim = parseISO(ev.fim);
+      if (fim >= hoje) {
+        const noites = Math.round((fim - ini) / 86400000);
+        linhas.push({ nome: anuncio.nome, cor: anuncio.cor, ini, fim, noites, tipo: ev.tipo });
+      }
+    });
+  });
+  linhas.sort((a,b) => a.ini - b.ini);
+  const tbody = document.querySelector('#tabela-reservas tbody');
+  const fmt = d => d.toLocaleDateString('pt-BR');
+  linhas.forEach(l => {
+    const tr = document.createElement('tr');
+    const sigla = siglaDoAnuncio(l.nome);
+    tr.innerHTML = `<td><span class="bolinha" style="background:${l.cor}">${sigla}</span> ${l.nome}</td><td>${l.tipo}</td><td>${fmt(l.ini)}</td><td>${fmt(l.fim)}</td><td>${l.noites}</td>`;
+    tbody.appendChild(tr);
+  });
+  if (linhas.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td colspan="5">Nenhuma reserva futura encontrada.</td>';
+    tbody.appendChild(tr);
+  }
+}
+
+construirMeses();
+construirTabela();
+</script>
+</body>
+</html>
