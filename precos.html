@@ -73,6 +73,14 @@
   .config-smart { display: flex; align-items: center; gap: 10px; font-size: 13px; margin-top: 6px; }
   .config-smart input { width: 20px; height: 20px; }
   .config-hint { color: var(--muted); font-size: 11.5px; margin-bottom: 18px; }
+  .config-rodape { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+  .config-salvo { font-size: 12px; font-weight: 700; color: #1e7e34; min-height: 16px; }
+  .config-salvo.piscando { animation: piscar 0.9s ease; }
+  @keyframes piscar { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 1; } }
+  .config-restaurar {
+    align-self: flex-start; font-size: 11.5px; color: #2980b9; background: none; border: none;
+    cursor: pointer; padding: 0; text-decoration: underline;
+  }
 </style>
 </head>
 <body>
@@ -115,9 +123,11 @@
   <div class="secao">
     <h2>Minha faixa de preço (Preço Inteligente do Airbnb)</h2>
     <div class="config-hint">
-      Editável aqui — fica salvo só neste navegador/computador (não muda o Airbnb sozinho,
-      nem aparece se seu pai abrir em outro aparelho). Serve pra sugestão abaixo nunca
-      passar da faixa que você realmente configurou lá.
+      Isso aqui não tem "Salvar" porque <strong>não existe conexão com o Airbnb</strong> —
+      editar aqui nunca muda nada lá. Serve só pra esta página saber sua faixa real e não
+      sugerir preço fora dela. Ao sair do campo (clicar fora ou apertar Tab), aparece
+      "✓ Salvo" — isso significa que ficou guardado neste navegador/computador, nada mais
+      (não aparece se seu pai abrir em outro aparelho, por exemplo).
     </div>
     <div class="config-cards" id="config-cards"></div>
   </div>
@@ -194,6 +204,10 @@ function construirConfigCards() {
         <input type="checkbox" class="in-smart" ${cfg.inteligente ? 'checked' : ''}>
         Preço Inteligente ativo no Airbnb
       </label>
+      <div class="config-rodape">
+        <span class="config-salvo"></span>
+        <button type="button" class="config-restaurar">Restaurar valor visto no Airbnb</button>
+      </div>
     `;
     const salvarDaTela = () => {
       const novo = {
@@ -202,11 +216,24 @@ function construirConfigCards() {
         inteligente: card.querySelector('.in-smart').checked,
       };
       salvarConfig(nome, novo);
+      const aviso = card.querySelector('.config-salvo');
+      const agora = new Date();
+      const hhmm = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
+      aviso.textContent = '✓ Salvo neste navegador às ' + hhmm;
+      aviso.classList.add('piscando');
+      setTimeout(() => aviso.classList.remove('piscando'), 900);
       renderSugestoes();
     };
     card.querySelector('.in-min').addEventListener('change', salvarDaTela);
     card.querySelector('.in-max').addEventListener('change', salvarDaTela);
     card.querySelector('.in-smart').addEventListener('change', salvarDaTela);
+    card.querySelector('.config-restaurar').addEventListener('click', () => {
+      const padrao = FAIXAS_PADRAO[nome] || { min: null, max: null, inteligente: true };
+      card.querySelector('.in-min').value = padrao.min ?? '';
+      card.querySelector('.in-max').value = padrao.max ?? '';
+      card.querySelector('.in-smart').checked = !!padrao.inteligente;
+      salvarDaTela();
+    });
     container.appendChild(card);
   });
 }
