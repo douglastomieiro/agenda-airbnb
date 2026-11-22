@@ -35,7 +35,13 @@
     background: var(--card); border: 1px solid var(--border); border-radius: 8px;
     min-height: 64px; padding: 4px; font-size: 12px; position: relative;
   }
-  .dia.vazio { background: transparent; border: none; }
+  .dia.vazio { background: transparent; border: none; min-height: 0; }
+  .dia-semana:nth-child(7n+1) { color: #c0392b; }
+  .dia-semana:nth-child(7n) { color: #2980b9; }
+  .dia:nth-child(7n+1):not(.vazio) { background: #fdf2f1; }
+  .dia:nth-child(7n):not(.vazio) { background: #eef5fb; }
+  .dia:nth-child(7n+1):not(.vazio) .numero { color: #c0392b; }
+  .dia:nth-child(7n):not(.vazio) .numero { color: #2980b9; }
   .dia .numero { font-weight: 600; font-size: 11px; color: var(--muted); }
   .dia.hoje { outline: 2px solid #111; }
   .dia:not(.vazio) { cursor: pointer; }
@@ -84,7 +90,7 @@
 <body>
   <div class="nav"><a href="index.html">← Início</a> · <a href="precos.html">Preços e concorrência →</a></div>
   <h1>Agenda dos meus anúncios — Airbnb</h1>
-  <div class="subtitulo">São Pedro / Águas de São Pedro — gerado em 22/11/2026 às 11:57</div>
+  <div class="subtitulo">São Pedro / Águas de São Pedro — gerado em 22/11/2026 às 12:03</div>
   <div class="legenda"><span class="legenda-item"><span class="bolinha" style="background:#e74c3c">M1</span>Studios M 1</span><span class="legenda-item"><span class="bolinha" style="background:#2980b9">M2</span>Studios M 2</span><span class="legenda-item"><span class="bolinha" style="background:#27ae60">M3</span>Studios M 3</span></div>
   <div class="subtitulo">🖱️ Clique numa data pra planejar um bloqueio (faxina, viagem) — não bloqueia no Airbnb sozinho, só anota aqui.</div>
   <div class="meses" id="meses"></div>
@@ -126,7 +132,7 @@
 <script>
 const ANUNCIOS = [{"nome": "Studios M 1", "cor": "#e74c3c", "eventos": [{"inicio": "2026-11-19", "fim": "2026-11-21", "tipo": "Reservado"}, {"inicio": "2026-11-21", "fim": "2026-11-23", "tipo": "Reservado"}, {"inicio": "2026-11-27", "fim": "2026-11-30", "tipo": "Reservado"}, {"inicio": "2026-12-04", "fim": "2026-12-06", "tipo": "Reservado"}, {"inicio": "2026-12-28", "fim": "2027-01-02", "tipo": "Reservado"}]}, {"nome": "Studios M 2", "cor": "#2980b9", "eventos": [{"inicio": "2026-12-24", "fim": "2026-12-27", "tipo": "Reservado"}, {"inicio": "2026-12-28", "fim": "2027-01-02", "tipo": "Reservado"}, {"inicio": "2026-11-21", "fim": "2026-11-23", "tipo": "Bloqueado"}]}, {"nome": "Studios M 3", "cor": "#27ae60", "eventos": [{"inicio": "2026-11-21", "fim": "2026-11-23", "tipo": "Reservado"}, {"inicio": "2026-12-29", "fim": "2027-01-05", "tipo": "Reservado"}, {"inicio": "2027-11-22", "fim": "2027-11-23", "tipo": "Bloqueado"}]}];
 const NUM_MESES = 6;
-const DIAS_SEMANA = ['D','S','T','Q','Q','S','S'];
+const DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const MESES_NOME = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 
 function parseISO(s) {

@@ -21,7 +21,13 @@
   .grade { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
   .dia-semana { font-size: 11px; color: var(--muted); text-align: center; padding-bottom: 2px; }
   .dia { background: var(--card); border: 1px solid var(--border); border-radius: 8px; min-height: 58px; padding: 4px; font-size: 12px; position: relative; }
-  .dia.vazio { background: transparent; border: none; }
+  .dia.vazio { background: transparent; border: none; min-height: 0; }
+  .dia-semana:nth-child(7n+1) { color: #c0392b; }
+  .dia-semana:nth-child(7n) { color: #2980b9; }
+  .dia:nth-child(7n+1):not(.vazio) { background: #fdf2f1; }
+  .dia:nth-child(7n):not(.vazio) { background: #eef5fb; }
+  .dia:nth-child(7n+1):not(.vazio) .numero { color: #c0392b; }
+  .dia:nth-child(7n):not(.vazio) .numero { color: #2980b9; }
   .dia .numero { font-weight: 600; font-size: 11px; color: var(--muted); }
   .dia.hoje { outline: 2px solid #111; }
   .dia:not(.vazio) { cursor: pointer; }
@@ -171,7 +177,7 @@ const SUGESTOES = [{"data": "2026-11-22", "anuncio": "Studios M 1", "evento": nu
 const CORES_ANUNCIO = {"Studios M 1": "#e74c3c", "Studios M 2": "#2980b9", "Studios M 3": "#27ae60"};
 const FAIXAS_PADRAO = {"Studios M 1": {"min": 180, "max": 350, "inteligente": true}, "Studios M 2": {"min": 180, "max": 350, "inteligente": true}, "Studios M 3": {"min": 160, "max": 300, "inteligente": true}};
 const NUM_MESES = 2;
-const DIAS_SEMANA = ['D','S','T','Q','Q','S','S'];
+const DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const MESES_NOME = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 
 function parseISO(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
